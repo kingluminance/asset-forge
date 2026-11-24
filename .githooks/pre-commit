@@ -1,0 +1,27 @@
+#!/bin/sh
+. "$(dirname "$0")/rules.sh"
+
+branch=$(git symbolic-ref --short -q HEAD) || exit 0   # rebase 중이면 통과
+[ "$branch" != main ] || fail "main 직접 커밋 금지. feat/W-XX-설명 브랜치를 만들어라"
+printf '%s' "$branch" | grep -Eq "$BRANCH_RE" ||
+  fail "브랜치 이름 위반: $branch  (필요: <type>/W-XX-kebab-설명)"
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+
+# 시크릿
+printf '%s\n' "$staged" | grep -Eq '(^|/)\.env(\.[^e].*)?$' && ! printf '%s\n' "$staged" | grep -q 'example' &&
+  fail ".env 커밋 금지 (.env.example만 허용)"
+git diff --cached -U0 | grep -E '^\+' | grep -Eq 'sk-[A-Za-z0-9_-]{20,}|AKIA[0-9A-Z]{16}|BEGIN [A-Z ]*PRIVATE KEY' &&
+  fail "API 키/비밀키로 보이는 값이 스테이징됨"
+
+# 테스트 우회
+tests=$(printf '%s\n' "$staged" | grep -E '\.(test|spec)\.tsx?$')
+[ -n "$tests" ] && printf '%s\n' "$tests" | xargs grep -nE '\b(it|test|describe)\.(only|skip)\(' 2>/dev/null &&
+  fail ".only / .skip 커밋 금지"
+
+# 타입·린트 (W-01 이후). vitest는 RED 커밋을 막으므로 여기선 안 돌린다
+if [ -f package.json ]; then
+  npx tsc --noEmit || fail "tsc 실패"
+  npm run -s lint || fail "lint 실패"
+fi
+exit 0

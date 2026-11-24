@@ -1,0 +1,42 @@
+name: gate
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: 규칙 (제목·브랜치·TDD 순서·크기·체크리스트)
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
+          BRANCH: ${{ github.head_ref }}
+          BODY: ${{ github.event.pull_request.body }}
+          BASE: origin/${{ github.base_ref }}
+        run: |
+          . .githooks/rules.sh
+          check_subject "$TITLE"
+          printf '%s' "$BRANCH" | grep -Eq "$BRANCH_RE" || fail "브랜치 이름 위반: $BRANCH"
+          [ -z "$(git rev-list --merges "$BASE..HEAD")" ] || fail "merge 커밋 금지"
+          check_tdd "$BASE..HEAD"
+          lines=$(git diff --numstat "$BASE...HEAD" -- . ':!package-lock.json' | awk '{s+=$1+$2} END {print s+0}')
+          [ "$lines" -le 400 ] || fail "변경 ${lines}줄 > 400줄. 작업을 쪼개라"
+          printf '%s' "$BODY" | grep -q -- '- \[ \]' && fail "PR 체크리스트 미완료"
+          printf '%s' "$BODY" | grep -q -- '- \[x\]' || fail "PR 템플릿 미사용"
+
+      - uses: actions/setup-node@v4
+        if: hashFiles('package-lock.json') != ''
+        with: { node-version: 22, cache: npm }
+
+      - name: 게이트 (tsc·lint·vitest·playwright)
+        if: hashFiles('package-lock.json') != ''
+        run: |
+          npm ci
+          npx tsc --noEmit
+          npm run lint
+          npx vitest run
+          npx playwright install --with-deps chromium
+          npx playwright test

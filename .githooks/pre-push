@@ -1,0 +1,12 @@
+#!/bin/sh
+. "$(dirname "$0")/rules.sh"
+zero=0000000000000000000000000000000000000000
+
+while read -r lref lsha rref rsha; do
+  [ "$lsha" = "$zero" ] && continue                      # 원격 브랜치 삭제
+  [ "$rref" = refs/heads/main ] && fail "main 직접 push 금지. PR로만"
+  base=$(git merge-base main "$lsha" 2>/dev/null) || continue
+  [ -z "$(git rev-list --merges "$base..$lsha")" ] || fail "merge 커밋 금지. main 위로 rebase 해라"
+  check_tdd "$base..$lsha"
+done
+exit 0

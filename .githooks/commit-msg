@@ -1,0 +1,10 @@
+#!/bin/sh
+. "$(dirname "$0")/rules.sh"
+
+subject=$(head -n1 "$1")
+check_subject "$subject"
+
+branch=$(git symbolic-ref --short -q HEAD) || exit 0   # rebase 중(detached)이면 통과
+bid=$(printf '%s' "$branch" | sed -n 's|^[a-z]*/\(W-[0-9][0-9]\)-.*|\1|p')
+cid=$(printf '%s' "$subject" | sed -n 's|^\[\(W-[0-9][0-9]\)\].*|\1|p')
+[ "$bid" = "$cid" ] || fail "커밋 ID $cid ≠ 브랜치 ID $bid ($branch). 브랜치 하나 = 작업 하나"
