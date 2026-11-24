@@ -1,4 +1,44 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(npm ci)",
+      "Bash(npx tsc:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx playwright:*)",
+      "Bash(npx cartotree:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git show:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(git switch:*)",
+      "Bash(git branch:*)",
+      "Bash(git fetch:*)",
+      "Bash(git rebase:*)",
+      "Bash(git push:*)",
+      "Bash(git worktree:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(gh pr list:*)",
+      "mcp__cartotree__cartotree_locate",
+      "mcp__cartotree__cartotree_peek",
+      "mcp__cartotree__cartotree_links"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.*)",
+      "Read(./server/.env)",
+      "Bash(gh pr merge:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)"
+    ]
+  },
+  "enableAllProjectMcpServers": true,
   "hooks": {
     "PreToolUse": [
       {
@@ -12,6 +52,13 @@
       {
         "hooks": [
           { "type": "command", "command": "sh \"$CLAUDE_PROJECT_DIR/.claude/hooks/gate.sh\"" }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          { "type": "command", "command": "echo 'cartotree is available: to find where code lives, call cartotree_locate first (then cartotree_peek to confirm) before grep or reading whole files.'" }
         ]
       }
     ]

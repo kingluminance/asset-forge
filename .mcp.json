@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "cartotree": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "cartotree@latest",
+        "mcp"
+      ]
+    }
+  }
+}
