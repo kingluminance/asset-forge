@@ -7,8 +7,12 @@ jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
+      # 기본값은 GitHub이 만든 가상 merge 커밋(refs/pull/N/merge)이라 merge 커밋 검사에 걸린다.
+      # PR 브랜치 head를 그대로 검사한다 (main 최신 반영은 브랜치 보호의 strict 옵션이 보장).
       - uses: actions/checkout@v4
-        with: { fetch-depth: 0 }
+        with:
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: 규칙 (제목·브랜치·TDD 순서·크기·체크리스트)
         env:
