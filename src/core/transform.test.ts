@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROTATE_HANDLE_OFFSET, handlePoints, hitTest, resizeFromCorner, rotationTo } from './transform';
+import { ROTATE_HANDLE_OFFSET, handlePoints, hitHandle, hitTest, resizeFromCorner, rotationTo } from './transform';
 import type { AssetDoc, Layer } from './types';
 
 // 좌표계: 캔버스 px, y는 아래로 증가, x/y는 중심, rotation은 라디안 시계 방향
@@ -60,5 +60,18 @@ describe('handlePoints', () => {
       expect(points[key].x).toBeCloseTo(expected[key][0], 6);
       expect(points[key].y).toBeCloseTo(expected[key][1], 6);
     }
+  });
+});
+
+describe('hitHandle', () => {
+  const tiny: Layer = { ...mk('tiny', 100, 100), width: 4, height: 4 }; // 모서리 98..102: 네 모서리 모두 서로 반경 8 안
+  it.each([
+    ['se 모서리 근처', flat, 143, 123, 'se'],
+    ['회전 핸들 근처', flat, 102, 58, 'rotate'],
+    ['모든 핸들의 반경 밖', flat, 100, 100, null],
+    ['핸들이 겹친 작은 레이어의 se 쪽', tiny, 101, 101, 'se'],
+    ['핸들이 겹친 작은 레이어의 ne 쪽', tiny, 101, 99, 'ne'],
+  ])('%s', (_name, layer, x, y, expected) => {
+    expect(hitHandle(layer, x, y, 8)).toBe(expected);
   });
 });
