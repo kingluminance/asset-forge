@@ -1,5 +1,4 @@
 import type { Server } from 'node:http';
-// lib0·y-protocols는 y-websocket의 전이 의존성. W-07에서 직접 의존성으로 승격 예정
 import * as decoding from 'lib0/decoding';
 import * as encoding from 'lib0/encoding';
 import { WebSocketServer, type WebSocket } from 'ws';
