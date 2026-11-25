@@ -1,27 +1,10 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
+import type { DocStore } from '../../src/core/types';
+import { colorStats } from './pixels';
 
-// 스크린샷 PNG를 페이지 안 2D 캔버스로 디코드해 마젠타/비마젠타 픽셀 비율을 센다.
-// (WebGL 캔버스를 직접 읽으면 preserveDrawingBuffer 때문에 빈 화면일 수 있어 스크린샷을 경유한다)
-async function magentaRatio(page: Page, png: Buffer) {
-  return page.evaluate(async (b64) => {
-    const img = new Image();
-    img.src = `data:image/png;base64,${b64}`;
-    await img.decode();
-    const c = document.createElement('canvas');
-    c.width = img.width;
-    c.height = img.height;
-    const ctx = c.getContext('2d')!;
-    ctx.drawImage(img, 0, 0);
-    const { data } = ctx.getImageData(0, 0, c.width, c.height);
-    let magenta = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      const [r, g, b] = [data[i], data[i + 1], data[i + 2]];
-      // 조명으로 어두워져도 통과: R·B가 높고 G가 그 절반 미만
-      if (r > 80 && b > 80 && g < Math.min(r, b) / 2) magenta++;
-    }
-    return magenta / (data.length / 4);
-  }, png.toString('base64'));
-}
+const MAGENTA =
+  'data:image/svg+xml,' +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"><rect width="64" height="64" fill="#ff00ff"/></svg>');
 
 test('프리뷰가 문서 레이어를 텍스처로 입힌 3D 박스를 렌더한다', async ({ page }) => {
   const errors: Error[] = [];
@@ -32,9 +15,17 @@ test('프리뷰가 문서 레이어를 텍스처로 입힌 3D 박스를 렌더�
   const preview = page.locator('[data-testid=preview]');
   await expect(preview).toBeVisible();
 
+  // 프리뷰는 캔버스와 같은 문서를 본다: 처음엔 마젠타가 없고, 레이어를 마젠타 256×256으로 바꾸면 텍스처가 따라온다
+  const initial = await colorStats(page, await preview.screenshot(), 'magenta');
+  expect(initial.ratio, '문서를 바꾸기 전에는 프리뷰에 마젠타가 없다').toBe(0);
+  await page.evaluate(
+    (src) => (window as unknown as { __store: DocStore }).__store.updateLayer('layer-1', { src, width: 256, height: 256 }),
+    MAGENTA,
+  );
+
   // 레이어 이미지 로드가 비동기라 텍스처가 올라올 때까지 기다린다
   await expect(async () => {
-    const ratio = await magentaRatio(page, await preview.screenshot());
+    const { ratio } = await colorStats(page, await preview.screenshot(), 'magenta');
     expect(ratio, '마젠타 레이어 텍스처가 박스 면에 보인다').toBeGreaterThanOrEqual(0.03);
     expect(ratio, '배경이 남는다 (박스가 화면을 꽉 채우지 않음)').toBeLessThanOrEqual(0.9);
   }).toPass({ timeout: 10_000 });
