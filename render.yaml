@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: asset-forge-server
+    runtime: node
+    plan: free
+    buildCommand: npm ci
+    startCommand: npm start
+    envVars:
+      - key: AI_PROVIDER
+        sync: false
+      - key: AI_API_KEY
+        sync: false
+      - key: RATE_LIMIT_PER_MIN
+        value: 10
