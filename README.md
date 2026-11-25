@@ -66,7 +66,7 @@ Yjs로 바꿀 때 canvas·preview 코드는 한 줄도 바뀌지 않았다(PR #8
 
 1. Render에 레포 연결 (`render.yaml` 자동 인식)
 2. (선택) Render 대시보드에서 `AI_PROVIDER`, `AI_API_KEY` 입력
-3. Vercel에 레포 연결, 환경변수 `VITE_SERVER_URL`에 Render 서비스의 https 주소 입력
+3. Vercel에 레포 연결, 환경변수 `VITE_SERVER_URL`에 Render 서비스의 https 주소 입력(끝에 `/` 없이)
 4. 배포
 
 ## 에이전트 하네스와 측정 수치
