@@ -31,12 +31,24 @@ CLAUDE.md, docs/harness.md, docs/conventions.md, docs/task-log.md를 읽고 순�
 - 공유 파일(package.json, src/core/types.ts, server/protocol.ts)은 W-01 이후 수정 금지. 필요하면 멈추고 보고
 - 한쪽이 먼저 머지되면 남은 브랜치를 main 위로 rebase하고 게이트 재실행
 
-## 멈추고 나에게 물어볼 때
-- W-01 계획: core/types.ts, server/protocol.ts 초안 승인
-- W-06 시작 전: 이미지 API 선택 (키는 내가 server/.env에 넣음)
-- W-07 배포 전: Vercel, Render 계정 연결
-- 훅이 막았는데 원인을 모를 때 (절대 우회 금지)
-- 일정이 밀려 harness.md 7절 컷 순서를 적용해야 할 때
+## 승인은 approver 에이전트에게 (나에게 묻지 마)
+아래 상황에선 멈추지 말고 approver 하위 에이전트를 불러 판정을 받아. 판정대로 진행해.
+- W-01 계획: core/types.ts, server/protocol.ts 초안 → approver 안건 1
+- 일정이 밀려 harness.md 7절 컷이 필요할 때 → 안건 2
+- 훅·CI가 막았는데 원인을 모를 때 → 안건 3 (절대 우회 금지)
+- 라이브러리 추가나 접근 방식이 갈릴 때 → 안건 4
+approver가 "반려"면 지적대로 고쳐서 다시 올려. "사람 필요"면 그때만 멈추고 나에게 보고해.
+approver의 판정 전문은 해당 PR 본문에 붙여.
+
+## 자격 증명 없이 끝까지 가는 법
+- W-06: 이미지 생성은 `src/ai/`·`server/ai-proxy.ts`에 공급자 어댑터 1개 + 목(mock) 공급자로 구현. E4는 목으로 통과.
+  실제 공급자는 환경변수 `AI_PROVIDER`, `AI_API_KEY`가 있을 때만 켜지게. 키가 없어도 앱은 목으로 동작해야 한다.
+- W-07: 배포 직전까지 전부 해 둬. `vercel.json`, `render.yaml`, 프로덕션 빌드 통과, 로컬 데모 GIF, README(측정 수치).
+  계정 연결과 실제 배포, API 키 입력만 남기고 멈춰.
+
+## 나에게 오는 건 딱 이것뿐
+- approver가 "사람 필요"를 낸 안건
+- W-07 끝: 배포 계정 연결 + API 키 (이 두 개는 내가 한다)
 
 ## 보고
 머지될 때마다 한 줄: "W-XX 머지됨, PR 링크, 걸린 시간, 게이트 실패 N회"
