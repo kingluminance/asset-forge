@@ -9,12 +9,14 @@
 | ID | 작업 | 모듈 | 선행 | 기한 | 수용 기준 | 상태 | 시간 | 게이트 실패 | 수동 수정 |
 |---|---|---|---|---|---|---|---|---|---|
 | W-00 | 하네스·규칙 세팅 (훅, CI, 에이전트) | harness | — | 11/24 | 훅 테스트 통과 | done | | | |
-| W-01 | **통합** Vite·React·TS·server 세팅(루트 `package.json` 하나), 게이트 4종 연결, `core/types.ts`·`server/protocol.ts` 정의, `"prepare": "git config core.hooksPath .githooks"` 스크립트 | 전체 | W-00 | 12/2 | 게이트 전부 초록 + 새 클론에서 `npm install`만으로 훅 활성화 + 첫 PR에서 CI `gate` 초록 | done | 0.7h | 0 | 0 |
-| W-02 | 캔버스 드래그·리사이즈·회전 | core, canvas | W-01 | 12/4 | E1 | done | 0.6h | 0 | 0 |
-| W-03 | Three.js 프리뷰 (텍스처 매핑) | preview | W-01 | 12/4 | 프리뷰 렌더 | done | 0.6h | 0 | 0 |
-| W-04 | 캔버스 → 프리뷰 실시간 반영 | app | W-02, W-03 | 12/7 | E2 | done | 0.5h | 0 | 0 |
-| W-05 | Yjs 협업 (y-websocket 서버 + 바인딩) | sync, server/ws | W-01 | 12/9 | E3 | done | 0.8h | 0 | 0 |
-| W-06 | AI 생성 (서버 프록시 + 클라이언트, 공급자 어댑터 + 목) | ai, server/ai-proxy | W-01 | 12/9 | E4 (목 공급자), 키 없이도 앱 동작 | done | 0.8h | 0 | 0 |
-| W-07 | 통합 점검, 배포 준비(vercel.json·render.yaml), 데모 GIF, README(측정 수치) | 전체 | W-04~06 | 12/16 | 프로덕션 빌드 통과, 배포 설정 완료. 계정 연결·키 입력은 사람 | todo | | | |
+| W-01 | **통합** Vite·React·TS·server 세팅(루트 `package.json` 하나), 게이트 4종 연결, `core/types.ts`·`server/protocol.ts` 정의, `"prepare": "git config core.hooksPath .githooks"` 스크립트 | 전체 | W-00 | 12/2 | 게이트 전부 초록 + 새 클론에서 `npm install`만으로 훅 활성화 + 첫 PR에서 CI `gate` 초록 | done | 0.6h | 0 | 0 |
+| W-02 | 캔버스 드래그·리사이즈·회전 | core, canvas | W-01 | 12/4 | E1 | done | 0.5h | 0 | 0 |
+| W-03 | Three.js 프리뷰 (텍스처 매핑) | preview | W-01 | 12/4 | 프리뷰 렌더 | done | 0.3h | 0 | 0 |
+| W-04 | 캔버스 → 프리뷰 실시간 반영 | app | W-02, W-03 | 12/7 | E2 | done | 0.3h | 0 | 0 |
+| W-05 | Yjs 협업 (y-websocket 서버 + 바인딩) | sync, server/ws | W-01 | 12/9 | E3 | done | 0.3h | 0 | 0 |
+| W-06 | AI 생성 (서버 프록시 + 클라이언트, 공급자 어댑터 + 목) | ai, server/ai-proxy | W-01 | 12/9 | E4 (목 공급자), 키 없이도 앱 동작 | done | 0.6h | 0 | 0 |
+| W-07 | 통합 점검, 배포 준비(vercel.json·render.yaml), 데모 GIF, README(측정 수치) | 전체 | W-04~06 | 12/16 | 프로덕션 빌드 통과, 배포 설정 완료. 계정 연결·키 입력은 사람 | done | 0.7h | 0 | 0 |
 
 병렬 가능 묶음: **W-02 ∥ W-03** (12/3~4), **W-05 ∥ W-06** (12/8~9). 나머지는 순차.
+
+시간은 작업 시작부터 PR 머지까지의 실제 경과(PR 타임스탬프 기준)다. W-02∥W-03, W-05∥W-06은 병렬이라 겹친다. 게이트 실패는 CI `gate` 기준, 수동 수정은 사람이 직접 고친 코드 줄 수.
