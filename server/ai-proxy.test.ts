@@ -36,7 +36,7 @@ describe('createAiHandler', () => {
     const { call } = await serve(okProvider());
     const res = await call({ method: 'OPTIONS' });
     expect(res.status).toBe(204);
-    expect(cors(res)).toBeTruthy();
+    expect(cors(res)).toBe('*');
     expect(res.headers.get('access-control-allow-methods')).toContain('POST');
     expect(res.headers.get('access-control-allow-headers')?.toLowerCase()).toContain('content-type');
   });
@@ -46,7 +46,7 @@ describe('createAiHandler', () => {
     const { post } = await serve(provider);
     const res = await post(JSON.stringify({ prompt }));
     expect(res.status).toBe(200);
-    expect(cors(res)).toBeTruthy();
+    expect(cors(res)).toBe('*');
     expect(await res.json()).toEqual({ image: IMAGE });
     expect(provider).toHaveBeenCalledWith(prompt);
   });
@@ -55,13 +55,13 @@ describe('createAiHandler', () => {
     ['JSON 아님', 'not json', [400]], ['prompt 누락', '{}', [400]], ['빈 문자열', '{"prompt":""}', [400]],
     ['공백뿐', '{"prompt":"   "}', [400]], ['문자열 아님', '{"prompt":123}', [400]],
     ['PROMPT_MAX 초과', JSON.stringify({ prompt: 'a'.repeat(PROMPT_MAX + 1) }), [400]],
-    ['과도하게 큰 본문(20KB)', JSON.stringify({ prompt: 'a'.repeat(20_000) }), [400, 413]],
+    ['본문 상한 초과(유효한 prompt + 20KB 추가 필드)', JSON.stringify({ prompt: 'sword', pad: 'a'.repeat(20_000) }), [413]],
   ])('POST %s → ErrorResponse로 거절, 공급자 미호출', async (_name, body, statuses) => {
     const provider = okProvider();
     const { post } = await serve(provider);
     const res = await post(body);
     expect(statuses).toContain(res.status);
-    expect(cors(res)).toBeTruthy();
+    expect(cors(res)).toBe('*');
     expect(typeof (await res.json()).error).toBe('string');
     expect(provider).not.toHaveBeenCalled();
   });
@@ -74,7 +74,7 @@ describe('createAiHandler', () => {
     expect((await post(body)).status).toBe(200);
     const res = await post(body);
     expect(res.status).toBe(429);
-    expect(cors(res)).toBeTruthy();
+    expect(cors(res)).toBe('*');
     expect(typeof (await res.json()).error).toBe('string');
     expect(provider).toHaveBeenCalledTimes(2);
   });
@@ -83,7 +83,7 @@ describe('createAiHandler', () => {
     const { post } = await serve(() => Promise.reject(new Error('upstream exploded: Bearer test-key')));
     const res = await post(JSON.stringify({ prompt: 'sword' }));
     expect(res.status).toBe(502);
-    expect(cors(res)).toBeTruthy();
+    expect(cors(res)).toBe('*');
     const text = await res.text();
     expect(typeof JSON.parse(text).error).toBe('string');
     expect(text).not.toContain('exploded');
@@ -94,7 +94,7 @@ describe('createAiHandler', () => {
     const { call } = await serve(okProvider());
     const res = await call({ method: 'GET' });
     expect(res.status).toBe(405);
-    expect(cors(res)).toBeTruthy();
+    expect(cors(res)).toBe('*');
   });
 });
 
@@ -109,6 +109,13 @@ describe('공급자', () => {
     expect(await mockProvider('sword')).toBe(a);
     expect(await mockProvider('shield')).not.toBe(a);
     expect(fetchSpy).not.toHaveBeenCalled();
+  });
+
+  it('mockProvider는 XML 1.0 금지 문자(U+FFFE·U+FFFF)를 SVG에 넣지 않고 나머지 글자는 남긴다', async () => {
+    const svg = Buffer.from((await mockProvider('a\uffffb\ufffec')).replace('data:image/svg+xml;base64,', ''), 'base64').toString();
+    expect(svg).not.toMatch(/[\ufffe\uffff]/);
+    const label = /<text[^>]*>(.*)<\/text>/.exec(svg)?.[1];
+    for (const ch of 'abc') expect(label).toContain(ch);
   });
 
   it('providerFromEnv는 AI_PROVIDER=openai와 키가 둘 다 있을 때만 실제 공급자를 쓴다', () => {
@@ -126,6 +133,13 @@ describe('공급자', () => {
     expect(String(url)).toBe('https://api.openai.com/v1/images/generations');
     expect(init?.method).toBe('POST');
     expect(new Headers(init?.headers).get('authorization')).toBe('Bearer test-key');
+  });
+
+  it('openaiProvider는 fetch에 제한 시간용 AbortSignal을 넘긴다', async () => {
+    const fetchSpy = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => Response.json({ data: [{ b64_json: 'QUJD' }] }));
+    vi.stubGlobal('fetch', fetchSpy);
+    await openaiProvider('test-key')('sword');
+    expect(fetchSpy.mock.calls[0][1]?.signal).toBeInstanceOf(AbortSignal);
   });
 
   it('openaiProvider는 응답이 ok가 아니면 reject한다', async () => {
