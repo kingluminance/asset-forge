@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef, useState, useSyncExternalStore, type PointerEvent } from 'react';
-import { handlePoints, hitTest, resizeFromCorner, rotationTo, type Corner } from '../core/transform';
+import { handlePoints, hitHandle, hitTest,resizeFromCorner, rotationTo, type Corner } from '../core/transform';
 import type { DocStore, LayerId } from '../core/types';
 
 const HANDLE_RADIUS = 8;
@@ -56,9 +56,9 @@ export function CanvasEditor({ store }: { store: DocStore }) {
     e.currentTarget.setPointerCapture(e.pointerId);
     const sel = find(selected);
     if (sel) {
-      const hit = Object.entries(handlePoints(sel)).find(([, p]) => Math.hypot(p.x - x, p.y - y) <= HANDLE_RADIUS);
-      if (hit) {
-        drag.current = { id: sel.id, mode: hit[0] as Handle, dx: 0, dy: 0 };
+      const mode = hitHandle(sel, x, y, HANDLE_RADIUS);
+      if (mode) {
+        drag.current = { id: sel.id, mode, dx: 0, dy: 0 };
         return;
       }
     }
