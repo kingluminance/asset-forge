@@ -1,3 +1,4 @@
+import { GeneratePanel } from '../ai/GeneratePanel';
 import { CanvasEditor } from '../canvas/CanvasEditor';
 import type { DocStore } from '../core/types';
 import { Preview } from '../preview/Preview';
@@ -24,6 +25,7 @@ export function App() {
   return (
     <>
       <h1>asset-forge</h1>
+      <GeneratePanel store={store} />
       <CanvasEditor store={store} />
       <Preview store={store} />
     </>
