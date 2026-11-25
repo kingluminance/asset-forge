@@ -9,7 +9,7 @@ const XML_ESCAPES: Record<string, string> = { '<': '&lt;', '>': '&gt;', '&': '&a
 export const mockProvider: ImageProvider = async (prompt) => {
   let hash = 0;
   for (const ch of prompt) hash = (hash * 31 + ch.codePointAt(0)!) >>> 0;
-  const label = prompt.slice(0, 24).replace(/[\u0000-\u001f]/g, ' ').replace(/[<>&"']/g, (c) => XML_ESCAPES[c]);
+  const label = prompt.slice(0, 24).replace(/[\u0000-\u001f￾￿]/g, ' ').replace(/[<>&"']/g, (c) => XML_ESCAPES[c]);
   const svg =
     `<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256"><rect width="256" height="256" fill="hsl(${hash % 360} 60% 45%)"/>` +
     `<text x="128" y="136" text-anchor="middle" font-size="20" fill="#fff">${label}</text></svg>`;
@@ -21,6 +21,7 @@ export const openaiProvider = (apiKey: string): ImageProvider => async (prompt) 
     method: 'POST',
     headers: { authorization: `Bearer ${apiKey}`, 'content-type': 'application/json' },
     body: JSON.stringify({ model: 'gpt-image-1', prompt, size: '1024x1024' }),
+    signal: AbortSignal.timeout(60_000),
   });
   if (!res.ok) throw new Error(`openai responded ${res.status}`);
   const b64 = ((await res.json()) as { data?: { b64_json?: string }[] }).data?.[0]?.b64_json;
