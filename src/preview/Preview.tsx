@@ -31,20 +31,22 @@ export function Preview({ store }: { store: DocStore }) {
     const material = new THREE.MeshBasicMaterial({ map: texture });
     scene.add(new THREE.Mesh(geometry, material));
 
-    const images = doc.layers.map((layer) => {
-      const img = new Image();
-      img.onload = draw;
-      img.src = layer.src;
-      return img;
-    });
+    const images = new Map<string, HTMLImageElement>();
 
     function draw() {
       if (disposed) return;
+      const doc = store.getDoc();
       ctx.fillStyle = '#dddddd';
       ctx.fillRect(0, 0, doc.width, doc.height);
-      doc.layers.forEach((layer, i) => {
-        const img = images[i];
-        if (!img?.complete || !img.naturalWidth) return;
+      doc.layers.forEach((layer) => {
+        let img = images.get(layer.src);
+        if (!img) {
+          img = new Image();
+          images.set(layer.src, img);
+          img.onload = draw;
+          img.src = layer.src;
+        }
+        if (!img.complete || !img.naturalWidth) return;
         ctx.save();
         ctx.translate(layer.x, layer.y);
         ctx.rotate(layer.rotation);
@@ -55,9 +57,11 @@ export function Preview({ store }: { store: DocStore }) {
       renderer.render(scene, camera);
     }
     draw();
+    const unsubscribe = store.subscribe(draw);
 
     return () => {
       disposed = true;
+      unsubscribe();
       texture.dispose();
       material.dispose();
       geometry.dispose();
