@@ -25,6 +25,8 @@
       "Bash(gh pr view:*)",
       "Bash(gh pr checks:*)",
       "Bash(gh pr list:*)",
+      "Bash(gh pr comment:*)",
+      "Bash(gh pr merge --auto --rebase:*)",
       "mcp__cartotree__cartotree_locate",
       "mcp__cartotree__cartotree_peek",
       "mcp__cartotree__cartotree_links"
@@ -33,7 +35,6 @@
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./server/.env)",
-      "Bash(gh pr merge:*)",
       "Bash(git reset --hard:*)",
       "Bash(git clean:*)"
     ]

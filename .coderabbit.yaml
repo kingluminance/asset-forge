@@ -1,0 +1,42 @@
+# CodeRabbit 설정. 리뷰는 참고용(필수 체크 아님). 머지 조건은 CI gate.
+language: ko-KR
+reviews:
+  profile: assertive
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - "!package-lock.json"
+    - "!docs/task-log.md"
+  path_instructions:
+    - path: "src/core/**"
+      instructions: "순수 TS여야 한다. React, DOM, three import가 있으면 지적. 좌표·행렬 계산의 경계값(0, 음수, 회전 360°)을 확인."
+    - path: "src/canvas/**"
+      instructions: "src/core만 참조해야 한다. src/preview 직접 참조 금지. 상태는 Yjs 문서 구독으로만 공유."
+    - path: "src/preview/**"
+      instructions: "src/core만 참조해야 한다. src/canvas 직접 참조 금지. three 리소스(geometry, texture, material) dispose 누락을 확인."
+    - path: "src/sync/**"
+      instructions: "Yjs 문서가 상태의 단일 원천. 트랜잭션 묶음, observer 해제 누락, 재연결 처리를 확인."
+    - path: "server/**"
+      instructions: "API 키는 환경변수에서만. 응답·로그에 키가 새지 않는지, AI 프록시 레이트 리밋이 있는지, WS 메시지 검증을 확인."
+    - path: "**/*.test.ts"
+      instructions: "구현 세부가 아니라 공개 API·동작을 테스트하는지. .only/.skip, 의미 없는 단언(toBeTruthy 남용) 지적."
+    - path: "tests/e2e/**"
+      instructions: "docs/harness.md 4절 수용 기준(E1~E4)과 시나리오가 일치하는지. 고정 sleep 대신 상태 대기를 쓰는지."
+  tools:
+    eslint:
+      enabled: true
+    gitleaks:
+      enabled: true
+chat:
+  auto_reply: true
+knowledge_base:
+  code_guidelines:
+    enabled: true
+    filePatterns:
+      - "CLAUDE.md"
+      - "docs/conventions.md"
+      - "docs/harness.md"

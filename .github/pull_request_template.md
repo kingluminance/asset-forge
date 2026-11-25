@@ -12,6 +12,9 @@
 - [ ] tsc · lint · vitest · playwright 로컬 통과
 - [ ] 모듈 경계 위반 없음 (core 순수, canvas↔preview 직접 참조 없음)
 - [ ] reviewer 에이전트 결과 "통과"를 아래에 붙임
+- [ ] qa 에이전트 결과 "통과"와 스크린샷을 아래에 붙임
 - [ ] task-log에 시간·게이트 실패·수동 수정 줄 수 기록
 
 ## reviewer 결과
+
+## qa 결과
