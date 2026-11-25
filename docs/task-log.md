@@ -11,7 +11,7 @@
 | W-00 | 하네스·규칙 세팅 (훅, CI, 에이전트) | harness | — | 11/24 | 훅 테스트 통과 | done | | | |
 | W-01 | **통합** Vite·React·TS·server 세팅(루트 `package.json` 하나), 게이트 4종 연결, `core/types.ts`·`server/protocol.ts` 정의, `"prepare": "git config core.hooksPath .githooks"` 스크립트 | 전체 | W-00 | 12/2 | 게이트 전부 초록 + 새 클론에서 `npm install`만으로 훅 활성화 + 첫 PR에서 CI `gate` 초록 | done | 0.7h | 0 | 0 |
 | W-02 | 캔버스 드래그·리사이즈·회전 | core, canvas | W-01 | 12/4 | E1 | todo | | | |
-| W-03 | Three.js 프리뷰 (텍스처 매핑) | preview | W-01 | 12/4 | 프리뷰 렌더 | todo | | | |
+| W-03 | Three.js 프리뷰 (텍스처 매핑) | preview | W-01 | 12/4 | 프리뷰 렌더 | done | 0.6h | 0 | 0 |
 | W-04 | 캔버스 → 프리뷰 실시간 반영 | app | W-02, W-03 | 12/7 | E2 | todo | | | |
 | W-05 | Yjs 협업 (y-websocket 서버 + 바인딩) | sync, server/ws | W-01 | 12/9 | E3 | todo | | | |
 | W-06 | AI 생성 (서버 프록시 + 클라이언트, 공급자 어댑터 + 목) | ai, server/ai-proxy | W-01 | 12/9 | E4 (목 공급자), 키 없이도 앱 동작 | todo | | | |
