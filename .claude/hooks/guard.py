@@ -19,6 +19,12 @@ if tool == "Bash":
             block("강제 push 금지. 필요하면 --force-with-lease")
         if re.search(r"\bpush\b.*\b(main|HEAD:main|:main)\b", cmd):
             block("main 직접 push 금지")
+    if re.search(r"\bgh\s+pr\s+merge\b", cmd) and not (
+        re.search(r"\s--auto\b", cmd) and re.search(r"\s--rebase\b", cmd)
+        and not re.search(r"\s--admin\b", cmd)):
+        block("머지는 'gh pr merge --auto --rebase'만 허용. CI gate 초록 전에는 GitHub이 머지하지 않는다")
+    if re.search(r"\bgh\s+api\b.*\b(protection|rulesets|merges)\b", cmd):
+        block("브랜치 보호·머지 API 직접 호출 금지")
     if re.search(r"core\.hooksPath|HUSKY=0|SKIP=", cmd):
         block("훅 설정 변경/우회 금지")
     if re.search(r"\b(rm|mv)\b.*(\.githooks|\.claude/(hooks|settings))", cmd):

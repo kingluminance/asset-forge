@@ -43,7 +43,9 @@
 | 본문은 [PR 템플릿](../.github/pull_request_template.md) 체크리스트 전부 채움 | CI (빈 체크박스 있으면 실패) |
 | 변경 400줄 이하 (lock 파일 제외). 넘으면 작업 쪼개기 | CI |
 | CI 게이트 전부 초록: tsc, lint, vitest, playwright, TDD 순서 | CI (required check) |
-| `reviewer` 에이전트 "통과" 결과를 PR 코멘트로 첨부 | 템플릿 체크 |
+| `reviewer`·`qa` 에이전트 "통과" 결과를 PR에 첨부 | 템플릿 체크 |
+| CodeRabbit 리뷰 스레드 전부 resolve | 브랜치 보호 (conversation resolution) |
+| 머지는 `gh pr merge --auto --rebase`만. `--admin`, 즉시 머지, 보호 API 호출 금지 | Claude 훅 |
 | 머지 방식: **rebase merge만**. squash 금지 (test→feat 이력 보존) | GitHub 설정 |
 | 머지 후 브랜치 삭제 | GitHub 설정 |
 

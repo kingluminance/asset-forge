@@ -11,7 +11,10 @@ asset-forge: 브라우저 게임 에셋 에디터 (캔버스 + Three.js 프리�
 `.claude/agents/`의 서브에이전트를 순서대로 부른다 ([docs/harness.md](./docs/harness.md) 1-1, 1-2):
 1. `test-writer` → 실패 테스트 (RED 확인). 커밋 `[W-XX] test: ...`
 2. `implementer` → 최소 구현 (GREEN). 테스트 수정 금지. 커밋 `[W-XX] feat: ...`
-3. `reviewer` → 지적 있으면 2로. "통과"면 끝
+3. `reviewer` → 지적 있으면 2로
+4. `qa` → 실제 브라우저로 수용 기준 확인. 실패면 2로
+5. PR → CodeRabbit 리뷰 대응(버그·보안·경계는 수정, 취향은 근거 답글) → `gh pr merge --auto --rebase`
+   CI gate가 초록이 될 때까지 GitHub이 머지를 보류한다. 다른 머지 방식은 가드가 막는다
 
 implementer가 "테스트가 틀렸다"고 보고하면 test-writer에게 넘긴다. 직접 고치지 않는다.
 Stop 훅이 tsc·vitest를 돌린다. 실패하면 끝낼 수 없다.
