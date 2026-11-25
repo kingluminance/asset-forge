@@ -15,12 +15,12 @@
 
 ## 실행
 
-Node 22 이상.
+Node 22.12 이상.
 
 ```sh
 npm install
-npm start        # 서버 (WebSocket + AI 프록시), 포트 8787
-npm run dev      # 프론트 개발 서버
+npm start        # 터미널 1: 서버 (WebSocket + AI 프록시), 포트 8787
+npm run dev      # 터미널 2: 프론트 개발 서버
 ```
 
 협업은 두 탭에서 `/?room=demo`를 연다. `room`이 없으면 서버 없이 로컬 문서로 동작한다.
@@ -28,6 +28,7 @@ npm run dev      # 프론트 개발 서버
 게이트 4종:
 
 ```sh
+npx playwright install chromium   # 최초 1회
 npx tsc --noEmit
 npm run lint
 npx vitest run
