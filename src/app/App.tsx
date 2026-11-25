@@ -26,8 +26,13 @@ export function App() {
     <>
       <h1>asset-forge</h1>
       <GeneratePanel store={store} />
-      <CanvasEditor store={store} />
-      <Preview store={store} />
+      <div style={{ display: 'flex', gap: 16 }}>
+        {/* 경계선은 감싸는 쪽에: canvas 요소에 border를 주면 포인터 좌표가 어긋난다 */}
+        <div style={{ alignSelf: 'flex-start', outline: '1px solid #999' }}>
+          <CanvasEditor store={store} />
+        </div>
+        <Preview store={store} />
+      </div>
     </>
   );
 }
