@@ -5,6 +5,8 @@ const restrict = (files, patterns, message) => ({
   files,
   rules: { 'no-restricted-imports': ['error', { patterns: [{ group: patterns, message }] }] },
 });
+// 디렉터리 자체(index import)와 하위 경로 모두 막는다
+const mods = (...names) => names.flatMap((n) => [`**/${n}`, `**/${n}/**`]);
 
 export default tseslint.config(
   { ignores: ['dist', 'test-results', 'playwright-report'] },
@@ -13,9 +15,12 @@ export default tseslint.config(
   restrict(
     ['src/core/**'],
     ['react', 'react/*', 'react-dom', 'react-dom/*', 'three', 'three/*',
-      '**/sync/**', '**/canvas/**', '**/preview/**', '**/ai/**', '**/app/**'],
-    'core/는 순수 TS: React·DOM·Three·다른 src 모듈 import 금지',
+      ...mods('sync', 'canvas', 'preview', 'ai', 'app', 'server')],
+    'core/는 순수 TS: React·DOM·Three·다른 src 모듈·server import 금지',
   ),
-  restrict(['src/canvas/**'], ['**/preview/**'], 'canvas/는 preview/를 직접 참조할 수 없다'),
-  restrict(['src/preview/**'], ['**/canvas/**'], 'preview/는 canvas/를 직접 참조할 수 없다'),
+  { files: ['src/core/**'], rules: { 'no-restricted-globals': ['error', 'window', 'document'] } },
+  restrict(['src/canvas/**'], mods('preview', 'sync', 'ai', 'app', 'server'), 'canvas/는 core/만 참조할 수 있다'),
+  restrict(['src/preview/**'], mods('canvas', 'sync', 'ai', 'app', 'server'), 'preview/는 core/만 참조할 수 있다'),
+  restrict(['src/sync/**'], mods('canvas', 'preview', 'ai', 'app'), 'sync/는 core/와 server/protocol만 참조할 수 있다'),
+  restrict(['src/ai/**'], mods('canvas', 'preview', 'sync', 'app'), 'ai/는 core/와 server/protocol만 참조할 수 있다'),
 );
