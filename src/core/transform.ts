@@ -50,3 +50,7 @@ export function handlePoints(layer: Layer): Record<Corner | 'rotate', Point> {
     rotate: toCanvas(layer, 0, -h - ROTATE_HANDLE_OFFSET),
   };
 }
+
+export function hitHandle(_layer: Layer, _x: number, _y: number, _radius: number): Corner | 'rotate' | null {
+  throw new Error('not implemented');
+}
