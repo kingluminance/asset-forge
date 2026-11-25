@@ -51,6 +51,11 @@ export function handlePoints(layer: Layer): Record<Corner | 'rotate', Point> {
   };
 }
 
-export function hitHandle(_layer: Layer, _x: number, _y: number, _radius: number): Corner | 'rotate' | null {
-  throw new Error('not implemented');
+export function hitHandle(layer: Layer, x: number, y: number, radius: number): Corner | 'rotate' | null {
+  let best: Corner | 'rotate' | null = null, bestDist = radius;
+  for (const [name, p] of Object.entries(handlePoints(layer)) as [Corner | 'rotate', Point][]) {
+    const dist = Math.hypot(p.x - x, p.y - y);
+    if (dist <= bestDist) [best, bestDist] = [name, dist];
+  }
+  return best;
 }
