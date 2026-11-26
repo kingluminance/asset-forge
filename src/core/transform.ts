@@ -60,6 +60,6 @@ export function hitHandle(layer: Layer, x: number, y: number, radius: number): C
   return best;
 }
 
-export function clampCenter(_doc: AssetDoc, _x: number, _y: number): Point {
-  throw new Error('not implemented');
+export function clampCenter(doc: AssetDoc, x: number, y: number): Point {
+  return { x: Math.min(Math.max(x, 0), doc.width), y: Math.min(Math.max(y, 0), doc.height) };
 }
