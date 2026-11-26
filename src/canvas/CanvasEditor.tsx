@@ -1,5 +1,5 @@
 import { useEffect, useReducer, useRef, useState, useSyncExternalStore, type PointerEvent } from 'react';
-import { handlePoints, hitHandle, hitTest,resizeFromCorner, rotationTo, type Corner } from '../core/transform';
+import { clampCenter, handlePoints, hitHandle, hitTest,resizeFromCorner, rotationTo, type Corner } from '../core/transform';
 import type { DocStore, LayerId } from '../core/types';
 
 const HANDLE_RADIUS = 8;
@@ -58,7 +58,8 @@ export function CanvasEditor({ store }: { store: DocStore }) {
     if (sel) {
       const mode = hitHandle(sel, x, y, HANDLE_RADIUS);
       if (mode) {
-        drag.current = { id: sel.id, mode, dx: 0, dy: 0 };
+        const h = handlePoints(sel)[mode];
+        drag.current = { id: sel.id, mode, dx: x - h.x, dy: y - h.y };
         return;
       }
     }
@@ -72,8 +73,9 @@ export function CanvasEditor({ store }: { store: DocStore }) {
     const d = drag.current;
     const layer = d && find(d.id);
     if (!d || !layer) return;
-    const { x, y } = point(e);
-    if (d.mode === 'move') store.updateLayer(d.id, { x: x - d.dx, y: y - d.dy });
+    const p = point(e);
+    const x = p.x - d.dx, y = p.y - d.dy;
+    if (d.mode === 'move') store.updateLayer(d.id, clampCenter(store.getDoc(), x, y));
     else if (d.mode === 'rotate') store.updateLayer(d.id, { rotation: rotationTo(layer, x, y) });
     else store.updateLayer(d.id, resizeFromCorner(layer, d.mode, x, y));
   };
