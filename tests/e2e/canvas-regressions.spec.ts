@@ -44,12 +44,12 @@ test('캔버스 밖에 놓은 레이어도 중심이 문서 안에 남아 다시
   const { errors, drag } = await open(page);
   await drag({ x: 256, y: 256 }, { x: 800, y: 700 });
   const dropped = await readLayer(page);
-  expect.soft(dropped.x, 'x ≤ 512').toBeLessThanOrEqual(512);
-  expect.soft(dropped.y, 'y ≤ 512').toBeLessThanOrEqual(512);
-  // 캔버스 안에 남은 부분을 다시 잡아 안쪽으로
+  expect.soft(Math.abs(dropped.x - 512), `x ${dropped.x} ≈ 512 ±1`).toBeLessThanOrEqual(1);
+  expect.soft(Math.abs(dropped.y - 512), `y ${dropped.y} ≈ 512 ±1`).toBeLessThanOrEqual(1);
+  // 캔버스 안에 남은 부분을 중심 −(32,32)에서 다시 잡아 안쪽으로: 오프셋 유지 → (300,300) + (32,32)
   await drag({ x: 480, y: 480 }, { x: 300, y: 300 });
   const moved = await readLayer(page);
-  expect.soft(moved.x, `x ${dropped.x} → ${moved.x}`).toBeLessThan(dropped.x);
-  expect.soft(moved.y, `y ${dropped.y} → ${moved.y}`).toBeLessThan(dropped.y);
+  expect.soft(Math.abs(moved.x - 332), `x ${moved.x} ≈ 332 ±1`).toBeLessThanOrEqual(1);
+  expect.soft(Math.abs(moved.y - 332), `y ${moved.y} ≈ 332 ±1`).toBeLessThanOrEqual(1);
   expect(errors).toEqual([]);
 });
