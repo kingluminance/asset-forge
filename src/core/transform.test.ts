@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ROTATE_HANDLE_OFFSET, handlePoints, hitHandle, hitTest, resizeFromCorner, rotationTo } from './transform';
+import { ROTATE_HANDLE_OFFSET, clampCenter, handlePoints, hitHandle, hitTest, resizeFromCorner, rotationTo } from './transform';
 import type { AssetDoc, Layer } from './types';
 
 // 좌표계: 캔버스 px, y는 아래로 증가, x/y는 중심, rotation은 라디안 시계 방향
@@ -73,5 +73,19 @@ describe('hitHandle', () => {
     ['핸들이 겹친 작은 레이어의 ne 쪽', tiny, 101, 99, 'ne'],
   ])('%s', (_name, layer, x, y, expected) => {
     expect(hitHandle(layer, x, y, 8)).toBe(expected);
+  });
+});
+
+describe('clampCenter', () => {
+  const doc: AssetDoc = { width: 512, height: 256, layers: [] };
+  it.each([
+    ['문서 안쪽 점은 그대로', 100, 200, 100, 200],
+    ['왼쪽 밖은 x=0으로', -10, 100, 0, 100],
+    ['오른쪽 밖은 x=width로', 700, 100, 512, 100],
+    ['위쪽 밖은 y=0으로', 100, -5, 100, 0],
+    ['아래쪽 밖은 y=height로', 100, 300, 100, 256],
+    ['모서리 밖은 두 축 모두', 800, 700, 512, 256],
+  ])('%s: (%d, %d) → (%d, %d)', (_name, x, y, ex, ey) => {
+    expect(clampCenter(doc, x, y)).toEqual({ x: ex, y: ey });
   });
 });
