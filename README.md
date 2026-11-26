@@ -4,7 +4,7 @@
 
 ![데모](docs/demo.gif)
 
-데모: https://asset-forge-rose.vercel.app (협업은 두 탭에서 `/?room=demo`)
+데모: https://asset-forge-rose.vercel.app (협업은 두 탭에서 같은 방 이름으로 `/?room=<원하는-이름>`. 방 이름이 같으면 누구와도 공유된다)
 
 서버는 Render 무료 플랜이라 15분간 요청이 없으면 잠든다. 첫 생성·협업 연결은 수십 초 걸릴 수 있다.
 
