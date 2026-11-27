@@ -174,6 +174,17 @@ describe('무료 공급자와 목 대체', () => {
     expect(fetch).toHaveBeenCalledTimes(1); // 응답을 보고 거절한 것인지 확인
   });
 
+  it.each(['.', '..'])('pollinationsProvider는 점만 있는 프롬프트 %j면 fetch 없이 reject한다', async (prompt) => {
+    stubFetch(jpeg); // URL 정규화로 /prompt/ 경로를 벗어나므로 요청 자체를 보내면 안 된다
+    await expect(pollinationsProvider(prompt)).rejects.toThrow();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it.each(['image/jpeg, image/png', 'image/jpeg; charset=binary'])('pollinationsProvider는 content-type %j에서 첫 미디어 타입만 data URL에 쓴다', async (type) => {
+    stubFetch(() => new Response(BYTES, { headers: { 'content-type': type } }));
+    expect(await pollinationsProvider('sword')).toBe(JPEG_URL);
+  });
+
   it('withFallback은 primary가 성공하면 그 결과만 쓰고, reject하면 같은 prompt로 fallback을 불러 그 결과를 쓴다', async () => {
     const [unused, used] = [okProvider(), okProvider()];
     expect(await withFallback(async () => 'data:primary', unused)('sword')).toBe('data:primary');
