@@ -7,7 +7,7 @@ services:
     startCommand: npm start
     envVars:
       - key: AI_PROVIDER
-        sync: false
+        value: pollinations
       - key: AI_API_KEY
         sync: false
       - key: RATE_LIMIT_PER_MIN
