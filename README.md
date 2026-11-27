@@ -61,7 +61,7 @@ Yjs로 바꿀 때 canvas·preview 코드는 한 줄도 바뀌지 않았다(PR #8
 |---|---|---|---|
 | 서버 | `PORT` | `8787` | 리슨 포트 |
 | 서버 | `AI_PROVIDER` | (없음) | `pollinations`: 키 없는 무료 API(실패 시 목으로 대체) / `openai`: `AI_API_KEY` 필요 / 그 외·미설정: 목 |
-| 서버 | `AI_API_KEY` | (없음) | `openai`일 때만 필요. 서버 전용. `server/.env` 또는 호스트 환경변수 |
+| 서버 | `AI_API_KEY` | (없음) | `openai`일 때만 필요. 서버 전용. `server/.env`(`server/.env.example`을 복사) 또는 호스트 환경변수 |
 | 서버 | `RATE_LIMIT_PER_MIN` | `10` | IP당 분당 생성 요청 수 |
 | 프론트 | `VITE_SERVER_URL` | `http://localhost:8787` | 빌드 시 읽는 서버 주소 |
 
@@ -131,4 +131,3 @@ W-02∥W-03, W-05∥W-06은 worktree를 나눠 병렬로 진행했다.
 - 생성 이미지는 data URL로 Yjs 문서에 들어가므로 큰 이미지에 부적합하다.
 - 캔버스 요소 밖으로 나간 핸들은 잡을 수 없다(몸통을 끌어 안으로 옮기면 된다).
 - 선택 상태는 탭마다 로컬이다.
-- `server/.env.example`이 없다(환경변수는 위 표 참고).

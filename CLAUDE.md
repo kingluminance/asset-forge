@@ -33,6 +33,7 @@ npx playwright test      # E2E (E1~E4)
 - `core/`: 순수 TS. React·DOM·Three import 금지
 - `canvas/`, `preview/`: `core/`만 참조. 서로 직접 참조 금지
 - 상태의 단일 원천은 Yjs 문서. 모듈 간 통신은 문서 구독으로만
+  - 예외: 탭마다 달라야 하는 UI 상태(선택 등)는 문서에 넣지 않고 `app/`에서 props·콜백으로 조합한다. 문서 데이터는 예외 없이 스토어만 거친다
 - 여러 모듈 조합은 `app/`에서만
 - 스택 고정: Vite + React + TS. Next.js, 상태관리 라이브러리 추가 금지
 
