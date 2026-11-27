@@ -1,7 +1,7 @@
 import { createServer, type Server } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createAiHandler, mockProvider, openaiProvider, providerFromEnv, type ImageProvider } from './ai-proxy';
+import { createAiHandler, mockProvider, openaiProvider, pollinationsProvider, providerFromEnv, withFallback, type ImageProvider } from './ai-proxy';
 import { AI_GENERATE_PATH, PROMPT_MAX } from './protocol';
 
 const IMAGE = 'data:image/png;base64,AAAA';
@@ -145,5 +145,49 @@ describe('공급자', () => {
   it('openaiProvider는 응답이 ok가 아니면 reject한다', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => Response.json({ error: 'bad key' }, { status: 401 })));
     await expect(openaiProvider('test-key')('sword')).rejects.toThrow();
+  });
+});
+
+describe('무료 공급자와 목 대체', () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 1, 2, 3]);
+  const JPEG_URL = `data:image/jpeg;base64,${Buffer.from(BYTES).toString('base64')}`;
+  const jpeg = (bytes = BYTES) => new Response(bytes, { headers: { 'content-type': 'image/jpeg' } });
+  const limited = () => Response.json({ status: 402, error: { code: 'FREE_LIMIT' } }, { status: 402 });
+  const stubFetch = (respond: () => Response) => vi.stubGlobal('fetch', vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => respond()));
+  it('pollinationsProvider는 인코딩한 프롬프트로 GET하고 이미지 바이트를 data URL로 바꾼다', async () => {
+    stubFetch(jpeg);
+    expect(await pollinationsProvider('red sword/axe?')).toBe(JPEG_URL);
+    const [url, init] = vi.mocked(fetch).mock.calls[0];
+    expect(String(url)).toContain(`https://image.pollinations.ai/prompt/${encodeURIComponent('red sword/axe?')}?`);
+    expect(new URL(String(url)).searchParams.get('width')).toBe('512');
+    expect(init?.method ?? 'GET').toBe('GET');
+    expect(init?.signal).toBeInstanceOf(AbortSignal);
+  });
+
+  it.each<[string, () => Response]>([
+    ['HTTP 402', limited], ['이미지가 아닌 200', () => Response.json({ ok: true })],
+    ['2MB 초과 본문', () => jpeg(new Uint8Array(2 * 1024 * 1024 + 1))],
+  ])('pollinationsProvider는 %s 응답이면 reject한다', async (_name, respond) => {
+    stubFetch(respond);
+    await expect(pollinationsProvider('sword')).rejects.toThrow();
+    expect(fetch).toHaveBeenCalledTimes(1); // 응답을 보고 거절한 것인지 확인
+  });
+
+  it('withFallback은 primary가 성공하면 그 결과만 쓰고, reject하면 같은 prompt로 fallback을 불러 그 결과를 쓴다', async () => {
+    const [unused, used] = [okProvider(), okProvider()];
+    expect(await withFallback(async () => 'data:primary', unused)('sword')).toBe('data:primary');
+    expect(unused).not.toHaveBeenCalled();
+    expect(await withFallback(() => Promise.reject(new Error('down')), used)('sword')).toBe(IMAGE);
+    expect(used).toHaveBeenCalledWith('sword');
+  });
+
+  it('providerFromEnv는 AI_PROVIDER=pollinations면 키 없이 무료 공급자를 쓰고 실패하면 목으로 대체한다', async () => {
+    const provider = providerFromEnv({ AI_PROVIDER: 'pollinations' });
+    expect(provider).not.toBe(mockProvider);
+    stubFetch(limited);
+    expect(await provider('sword')).toBe(await mockProvider('sword'));
+    stubFetch(jpeg);
+    expect(await provider('sword')).toBe(JPEG_URL);
   });
 });
