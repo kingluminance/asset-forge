@@ -38,9 +38,14 @@ export const pollinationsProvider: ImageProvider = async (prompt) => {
   if (!res.ok) throw new Error(`pollinations responded ${res.status}`);
   const type = (res.headers.get('content-type') ?? '').split(/[,;]/)[0].trim().toLowerCase();
   if (!type.startsWith('image/')) throw new Error('pollinations response is not an image');
-  const bytes = Buffer.from(await res.arrayBuffer());
-  if (bytes.length > 2 * 1024 * 1024) throw new Error('pollinations image exceeds 2MB');
-  return `data:${type};base64,${bytes.toString('base64')}`;
+  if (!res.body) throw new Error('pollinations response has no body');
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  for await (const chunk of res.body) { // throw로 루프를 벗어나면 스트림이 취소된다
+    if ((size += chunk.length) > 2 * 1024 * 1024) throw new Error('pollinations image exceeds 2MB');
+    chunks.push(chunk);
+  }
+  return `data:${type};base64,${Buffer.concat(chunks).toString('base64')}`;
 };
 
 export const withFallback = (primary: ImageProvider, fallback: ImageProvider): ImageProvider => async (prompt) => {
