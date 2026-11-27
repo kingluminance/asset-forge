@@ -1,6 +1,7 @@
+import { useState, useSyncExternalStore } from 'react';
 import { GeneratePanel } from '../ai/GeneratePanel';
 import { CanvasEditor } from '../canvas/CanvasEditor';
-import type { DocStore } from '../core/types';
+import type { DocStore, LayerId } from '../core/types';
 import { Preview } from '../preview/Preview';
 import { connect } from '../sync/connect';
 
@@ -22,14 +23,24 @@ const store = connect(
 window.__store = store;
 
 export function App() {
+  const doc = useSyncExternalStore(store.subscribe, store.getDoc);
+  const [selected, setSelected] = useState<LayerId | null>(null);
+  // 협업 상대가 지운 레이어는 선택돼 있어도 지울 수 없다
+  const canDelete = doc.layers.some((l) => l.id === selected);
+  const remove = () => {
+    if (selected && canDelete) store.removeLayer(selected);
+    setSelected(null);
+  };
+
   return (
     <>
       <h1>asset-forge</h1>
-      <GeneratePanel store={store} />
+      <GeneratePanel store={store} onCreated={setSelected} />
+      <button data-testid="delete" disabled={!canDelete} onClick={remove}>삭제</button>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
         {/* 경계선은 감싸는 쪽에: canvas 요소에 border를 주면 포인터 좌표가 어긋난다 */}
         <div style={{ alignSelf: 'flex-start', outline: '1px solid #999' }}>
-          <CanvasEditor store={store} />
+          <CanvasEditor store={store} selected={selected} onSelect={setSelected} onDelete={remove} />
         </div>
         <Preview store={store} />
       </div>
