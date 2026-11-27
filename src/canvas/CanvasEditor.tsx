@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef, useState, useSyncExternalStore, type PointerEvent } from 'react';
+import { useEffect, useReducer, useRef, useSyncExternalStore, type PointerEvent } from 'react';
 import { clampCenter, handlePoints, hitHandle, hitTest,resizeFromCorner, rotationTo, type Corner } from '../core/transform';
 import type { DocStore, LayerId } from '../core/types';
 
@@ -6,9 +6,10 @@ const HANDLE_RADIUS = 8;
 type Handle = Corner | 'rotate';
 type Drag = { id: LayerId; mode: Handle | 'move'; dx: number; dy: number };
 
-export function CanvasEditor({ store }: { store: DocStore }) {
+type Props = { store: DocStore; selected: LayerId | null; onSelect: (id: LayerId | null) => void; onDelete: () => void };
+
+export function CanvasEditor({ store, selected, onSelect, onDelete }: Props) {
   const doc = useSyncExternalStore(store.subscribe, store.getDoc);
-  const [selected, setSelected] = useState<LayerId | null>(null);
   const [, redraw] = useReducer((n: number) => n + 1, 0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const images = useRef(new Map<string, HTMLImageElement>());
@@ -65,7 +66,7 @@ export function CanvasEditor({ store }: { store: DocStore }) {
     }
     const id = hitTest(store.getDoc(), x, y);
     const layer = find(id);
-    setSelected(id);
+    onSelect(id);
     drag.current = layer ? { id: layer.id, mode: 'move', dx: x - layer.x, dy: y - layer.y } : null;
   };
 
@@ -90,6 +91,10 @@ export function CanvasEditor({ store }: { store: DocStore }) {
       width={doc.width}
       height={doc.height}
       style={{ display: 'block', width: doc.width, height: doc.height }}
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if ((e.key === 'Delete' || e.key === 'Backspace') && selected) onDelete();
+      }}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={endDrag}
