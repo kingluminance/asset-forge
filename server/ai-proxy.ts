@@ -31,11 +31,12 @@ export const openaiProvider = (apiKey: string): ImageProvider => async (prompt) 
 
 // ponytail: 키 없는 무료 API는 IP당 45초에 1장. 넘으면 402 → 목으로 대체. 품질·한도가 필요하면 키가 있는 공급자로 교체
 export const pollinationsProvider: ImageProvider = async (prompt) => {
+  if (/^\.+$/.test(prompt)) throw new Error('pollinations prompt cannot be only dots'); // URL 파서가 점 세그먼트를 정규화해 /prompt/ 경로를 벗어난다
   const res = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&nologo=true`, {
     signal: AbortSignal.timeout(60_000),
   });
   if (!res.ok) throw new Error(`pollinations responded ${res.status}`);
-  const type = res.headers.get('content-type') ?? '';
+  const type = (res.headers.get('content-type') ?? '').split(/[,;]/)[0].trim().toLowerCase();
   if (!type.startsWith('image/')) throw new Error('pollinations response is not an image');
   const bytes = Buffer.from(await res.arrayBuffer());
   if (bytes.length > 2 * 1024 * 1024) throw new Error('pollinations image exceeds 2MB');
