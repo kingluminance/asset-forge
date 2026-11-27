@@ -24,12 +24,14 @@ test('A: Enter로 생성을 시작하고, 요청 중에는 "생성 중…", 5초
     posts += 1;
     await held.then(() => json(route, 200, { image: IMAGE }));
   });
-  await page.clock.install(); // 가짜 타이머: 시간은 계속 흐르고 fastForward로 건너뛴다
+  await page.clock.install();
   await page.goto('/');
   const prompt = page.getByTestId('prompt');
   const button = page.getByTestId('generate');
   const hint = page.getByTestId('generate-hint');
   await expect(prompt).toBeVisible({ timeout: 5000 });
+  // 시계를 멈춘다: 이후 시간은 fastForward로만 흐르므로 실제 소요 시간이 5초 타이머에 영향을 주지 않는다
+  await page.clock.pauseAt(Date.now() + 60_000);
 
   await prompt.press('Enter'); // 빈 프롬프트: 요청 없음
   await prompt.fill('pixel sword');
@@ -80,6 +82,8 @@ test('C: 방이 없으면 협업 방 만들기 링크, 방 안에서는 방 이�
   await page.goto('/');
   const newRoom = page.getByTestId('new-room');
   await expect(newRoom).toHaveText('협업 방 만들기', { timeout: 5000 });
+  const note = page.getByTestId('new-room-note');
+  await expect(note, '로컬 편집이 새 방으로 옮겨지지 않음을 알린다').toContainText('옮겨지지 않습니다');
   const copy = page.getByTestId('copy-link');
   await expect(page.getByTestId('room-name')).toBeHidden();
   await expect(copy).toBeHidden();
@@ -92,6 +96,7 @@ test('C: 방이 없으면 협업 방 만들기 링크, 방 안에서는 방 이�
   await page.goto('/?room=abc');
   await expect(page.getByTestId('room-name')).toHaveText('abc');
   await expect(newRoom).toBeHidden();
+  await expect(note).toBeHidden();
   await expect(copy).toHaveText('링크 복사');
   await copy.click();
   await expect(copy).toHaveText('복사됨');
