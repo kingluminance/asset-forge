@@ -31,7 +31,7 @@ export function App() {
   const [selected, setSelected] = useState<LayerId | null>(null);
   const [copied, setCopied] = useState(false);
   // 복사 실패(권한 거부 등)면 글자를 바꾸지 않는다
-  const copyLink = () => navigator.clipboard.writeText(location.href).then(() => setCopied(true), () => {});
+  const copyLink = () => navigator.clipboard?.writeText(location.href).then(() => setCopied(true), () => {});
   // 협업 상대가 지운 레이어는 선택돼 있어도 지울 수 없다
   const canDelete = doc.layers.some((l) => l.id === selected);
   const remove = () => {

@@ -29,6 +29,8 @@ export function GeneratePanel({ store, onCreated }: { store: DocStore; onCreated
       const id = crypto.randomUUID();
       store.addLayer({ id, src: data.image, x: doc.width / 2, y: doc.height / 2, width: 256, height: 256, rotation: 0 });
       onCreated(id);
+    } catch {
+      setError('이미지 생성에 실패했습니다. 다시 시도해 주세요.');
     } finally {
       clearTimeout(timer);
       setSlow(false);
@@ -42,7 +44,7 @@ export function GeneratePanel({ store, onCreated }: { store: DocStore; onCreated
         <input data-testid="prompt" aria-label="생성 프롬프트" maxLength={PROMPT_MAX} value={prompt} onChange={(e) => setPrompt(e.target.value)} />
         <button data-testid="generate" disabled={busy}>{busy ? '생성 중…' : '생성'}</button>
       </form>
-      {slow && <p data-testid="generate-hint">서버를 깨우는 중… 처음에는 1분쯤 걸릴 수 있습니다.</p>}
+      {slow && <p data-testid="generate-hint" role="status">서버를 깨우는 중… 처음에는 1분쯤 걸릴 수 있습니다.</p>}
       {error && <p data-testid="generate-error" role="alert">{error}</p>}
     </div>
   );
