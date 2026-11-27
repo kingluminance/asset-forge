@@ -29,16 +29,32 @@ export const openaiProvider = (apiKey: string): ImageProvider => async (prompt) 
   return `data:image/png;base64,${b64}`;
 };
 
-export const pollinationsProvider: ImageProvider = async (_prompt) => {
-  throw new Error('not implemented');
+// ponytail: 키 없는 무료 API는 IP당 45초에 1장. 넘으면 402 → 목으로 대체. 품질·한도가 필요하면 키가 있는 공급자로 교체
+export const pollinationsProvider: ImageProvider = async (prompt) => {
+  const res = await fetch(`https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}?width=512&height=512&nologo=true`, {
+    signal: AbortSignal.timeout(60_000),
+  });
+  if (!res.ok) throw new Error(`pollinations responded ${res.status}`);
+  const type = res.headers.get('content-type') ?? '';
+  if (!type.startsWith('image/')) throw new Error('pollinations response is not an image');
+  const bytes = Buffer.from(await res.arrayBuffer());
+  if (bytes.length > 2 * 1024 * 1024) throw new Error('pollinations image exceeds 2MB');
+  return `data:${type};base64,${bytes.toString('base64')}`;
 };
 
-export function withFallback(_primary: ImageProvider, _fallback: ImageProvider): ImageProvider {
-  throw new Error('not implemented');
-}
+export const withFallback = (primary: ImageProvider, fallback: ImageProvider): ImageProvider => async (prompt) => {
+  try {
+    return await primary(prompt);
+  } catch (err) {
+    console.error('[ai] primary provider failed, using fallback:', err instanceof Error ? err.message : 'unknown error'); // 프롬프트는 남기지 않는다
+    return fallback(prompt);
+  }
+};
 
-export const providerFromEnv =(env: Record<string, string | undefined>): ImageProvider =>
-  env.AI_PROVIDER === 'openai' && env.AI_API_KEY ? openaiProvider(env.AI_API_KEY) : mockProvider;
+export const providerFromEnv = (env: Record<string, string | undefined>): ImageProvider => {
+  if (env.AI_PROVIDER === 'pollinations') return withFallback(pollinationsProvider, mockProvider);
+  return env.AI_PROVIDER === 'openai' && env.AI_API_KEY ? openaiProvider(env.AI_API_KEY) : mockProvider;
+};
 
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' };
 const MAX_BODY_BYTES = 8 * 1024; // PROMPT_MAX자 JSON이 넉넉히 들어가는 크기
