@@ -78,7 +78,12 @@ export function CanvasEditor({ store, selected, onSelect, onDelete }: Props) {
     const x = p.x - d.dx, y = p.y - d.dy;
     if (d.mode === 'move') store.updateLayer(d.id, clampCenter(store.getDoc(), x, y));
     else if (d.mode === 'rotate') store.updateLayer(d.id, { rotation: rotationTo(layer, x, y) });
-    else store.updateLayer(d.id, resizeFromCorner(layer, d.mode, x, y));
+    else {
+      // 중심이 문서 밖으로 나가는 리사이즈는 버린다 (밖으로 나가면 다시 잡을 수 없다)
+      const patch = resizeFromCorner(layer, d.mode, x, y);
+      const c = clampCenter(store.getDoc(), patch.x!, patch.y!);
+      if (c.x === patch.x && c.y === patch.y) store.updateLayer(d.id, patch);
+    }
   };
   const endDrag = () => {
     drag.current = null;
