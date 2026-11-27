@@ -29,7 +29,15 @@ export const openaiProvider = (apiKey: string): ImageProvider => async (prompt) 
   return `data:image/png;base64,${b64}`;
 };
 
-export const providerFromEnv = (env: Record<string, string | undefined>): ImageProvider =>
+export const pollinationsProvider: ImageProvider = async (_prompt) => {
+  throw new Error('not implemented');
+};
+
+export function withFallback(_primary: ImageProvider, _fallback: ImageProvider): ImageProvider {
+  throw new Error('not implemented');
+}
+
+export const providerFromEnv =(env: Record<string, string | undefined>): ImageProvider =>
   env.AI_PROVIDER === 'openai' && env.AI_API_KEY ? openaiProvider(env.AI_API_KEY) : mockProvider;
 
 const CORS = { 'access-control-allow-origin': '*', 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' };
