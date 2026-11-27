@@ -48,7 +48,10 @@ export function App() {
           <button data-testid="copy-link" onClick={copyLink}>{copied ? '복사됨' : '링크 복사'}</button>
         </p>
       ) : (
-        <p><a data-testid="new-room" href={`?room=${newRoom}`}>협업 방 만들기</a></p>
+        <p>
+          <a data-testid="new-room" href={`?room=${newRoom}`}>협업 방 만들기</a>{' '}
+          <small data-testid="new-room-note">새 방은 빈 문서로 시작합니다. 지금 캔버스의 편집 내용은 옮겨지지 않습니다.</small>
+        </p>
       )}
       <GeneratePanel store={store} onCreated={setSelected} />
       <button data-testid="delete" disabled={!canDelete} onClick={remove}>삭제</button>
