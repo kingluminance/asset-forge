@@ -73,6 +73,13 @@ test('선택한 레이어를 삭제 버튼과 Delete 키로 지운다 (입력창
   await editor.click({ position: { x: 256, y: 256 } }); // 캔버스로 포커스
   await page.keyboard.press('Delete');
   expect((await readLayers(page)).length).toBe(0);
+
+  await page.goto('/');
+  const url = page.url();
+  await editor.click({ position: { x: 256, y: 256 } }); // 선택 + 캔버스 포커스
+  await page.keyboard.press('Backspace');
+  expect((await readLayers(page)).length).toBe(0);
+  expect(page.url(), 'Backspace가 뒤로 가기를 일으키지 않는다').toBe(url);
   expect(errors).toEqual([]);
 });
 
